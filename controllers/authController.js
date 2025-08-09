@@ -1,174 +1,162 @@
-import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { User } from '../models/index.js';
 
-// Register
+// Register user
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role, phone } = req.body;
+    const { name, email, password, role = 'user' } = req.body;
 
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: 'Email already exists' });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-      role: role || 'user', // Default to user role
-      profile: { phone },
-    });
-
-    await newUser.save();
-    
-    // Don't send password in response
-    const userResponse = { ...newUser.toObject() };
-    delete userResponse.password;
-    
-    res.status(201).json({ message: 'User registered successfully', user: userResponse });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
-
-// Login
-export const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
-
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET || 'secretkey',
-      { expiresIn: '7d' }
-    );
-
-    // Don't send password in response
-    const userResponse = { ...user.toObject() };
-    delete userResponse.password;
-
-    res.json({ message: 'Login successful', token, user: userResponse });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
-
-// Get current user
-export const getCurrentUser = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password');
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json({ success: true, data: user });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
-
-// Get All Users (super admin only)
-export const getAllUsers = async (req, res) => {
-  try {
-    if (req.user.role !== 'super_admin') {
-      return res.status(403).json({ message: 'Only super admin can view all users' });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
+      });
     }
 
-    const users = await User.find().select('-password').sort({ createdAt: -1 });
-    res.json({ success: true, data: users });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-// Get User by ID
-export const getUserById = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select('-password');
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json({ success: true, data: user });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
-
-// Create User (super admin only)
-export const createUser = async (req, res) => {
-  try {
-    if (req.user.role !== 'super_admin') {
-      return res.status(403).json({ message: 'Only super admin can create users' });
-    }
-
-    const { name, email, password, role, assignedEventId, phone } = req.body;
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: 'Email already exists' });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({
+    // Create user
+    const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
       role,
-      assignedEventId,
-      profile: { phone },
+      isActive: true
     });
 
-    await newUser.save();
-    
-    // Don't send password in response
-    const userResponse = { ...newUser.toObject() };
-    delete userResponse.password;
-    
-    res.status(201).json({ success: true, message: 'User created successfully', data: userResponse });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    // Remove password from response
+    const { password: _, ...userResponse } = newUser;
+
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully',
+      data: userResponse
+    });
+  } catch (error) {
+    console.error('Register error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error registering user',
+      error: error.message
+    });
   }
 };
 
-// Update User
-export const updateUser = async (req, res) => {
+// Login user
+export const loginUser = async (req, res) => {
   try {
-    const updateData = { ...req.body };
-    if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 10);
+    const { email, password } = req.body;
+
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
     }
 
-    // Check permissions
-    if (req.user.role !== 'super_admin' && req.user.id !== req.params.id) {
-      return res.status(403).json({ message: 'Not authorized to update this user' });
+    // Check password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
     }
 
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Remove password from response
+    const { password: _, ...userResponse } = user;
+
+    res.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        user: userResponse,
+        token
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error logging in',
+      error: error.message
+    });
+  }
+};
+
+// Get user profile
+export const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Remove password from response
+    const { password: _, ...userResponse } = user;
+
+    res.json({
+      success: true,
+      data: userResponse
+    });
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching user profile',
+      error: error.message
+    });
+  }
+};
+
+// Update user profile
+export const updateUserProfile = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    
     const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      updateData,
+      req.user.userId,
+      { name, email },
       { new: true }
-    ).select('-password');
+    );
 
-    if (!updatedUser) return res.status(404).json({ message: 'User not found' });
-
-    res.json({ success: true, message: 'User updated successfully', data: updatedUser });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
-
-// Delete User (super admin only)
-export const deleteUser = async (req, res) => {
-  try {
-    if (req.user.role !== 'super_admin') {
-      return res.status(403).json({ message: 'Only super admin can delete users' });
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
 
-    const deletedUser = await User.findByIdAndDelete(req.params.id);
-    if (!deletedUser) return res.status(404).json({ message: 'User not found' });
+    // Remove password from response
+    const { password: _, ...userResponse } = updatedUser;
 
-    res.json({ success: true, message: 'User deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: userResponse
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating profile',
+      error: error.message
+    });
   }
 };

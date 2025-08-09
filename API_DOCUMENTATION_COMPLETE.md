@@ -837,18 +837,6 @@ export function AuthProvider({ children }) {
 
 ---
 
-## CORS Configuration
-
-The backend is configured to accept requests from:
-- `http://localhost:3000`
-- `http://localhost:3001`
-- `http://localhost:5173`
-- `http://localhost:5174`
-
-For production, update the CORS configuration in `index.js` to include your production frontend URL.
-
----
-
 ## Security Notes
 
 1. **JWT Tokens**: Store securely (preferably in httpOnly cookies for production)

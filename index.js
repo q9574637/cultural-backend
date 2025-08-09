@@ -1,19 +1,17 @@
 import express, { json } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-dotenv.config();
+import { initializeGoogleSheets, initializeAllSheets } from "./config/googleSheets.js";
+import { connectDB } from "./models/index.js";
 
+// Import routes
 import authRoutes from "./routes/auth.js";
 import eventRoutes from "./routes/events.js";
-import committeeRoutes from "./routes/committee.js";
-import registrationRoutes from "./routes/registrations.js";
-import healthRoutes from "./routes/healthCheck.js";
-import uploadFileRoute from "./routes/uploadFile.js";
-import volunteerRoutes from "./routes/volunteer.js";
-import applicationRoutes from "./routes/applications.js";
+import healthRoutes from "./routes/health.js";
+
+dotenv.config();
 
 const app = express();
-import connectDb from "./Config/Connection.js";
 
 // Middleware
 app.use(cors({
@@ -25,20 +23,15 @@ app.use(cors({
 app.use(json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Connect to database
-connectDb();
+// Routes
+app.get("/", (req, res) => {
+  res.send("Server is Running Successfully");
+});
 
-// Health check route (before auth)
-app.use("/api", healthRoutes);
-
-// API routes
+// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
-app.use("/api/committee", committeeRoutes);
-app.use("/api/registrations", registrationRoutes);
-app.use("/api", uploadFileRoute);
-app.use("/api/volunteers", volunteerRoutes);
-app.use("/api/applications", applicationRoutes);
+app.use("/api/health-check", healthRoutes);
 
 // Error handling middleware
 app.use((error, req, res, next) => {
@@ -58,7 +51,27 @@ app.use((req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () =>
-  console.log(`🚀 Nuvoriya Event Management Server running on port ${PORT}`)
-);
+// Initialize Google Sheets Database
+async function startServer() {
+  try {
+    // Initialize Google Sheets API
+    await initializeGoogleSheets();
+    
+    // Initialize all required sheets
+    await initializeAllSheets();
+    
+    // Connect to database
+    await connectDB();
+    
+    const PORT = process.env.PORT || 3001;
+    app.listen(PORT, () => {
+      console.log(`🚀 Nuvoriya Event Management Server running on port ${PORT}`);
+      console.log(`📊 Using Google Sheets as database`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
