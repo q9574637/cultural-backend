@@ -9,13 +9,17 @@ import committeeRoutes from "./routes/committee.js";
 import registrationRoutes from "./routes/registrations.js";
 import healthRoutes from "./routes/healthCheck.js";
 import uploadFileRoute from "./routes/uploadFile.js";
+import volunteerRoutes from "./routes/volunteer.js";
+import applicationRoutes from "./routes/applications.js";
 
 const app = express();
 import connectDb from "./Config/Connection.js";
 
 // Middleware
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://localhost:5174"], 
+  origin: (origin, callback) => {
+    callback(null, true); // Accept all origins
+  },
   credentials: true
 }));
 app.use(json({ limit: '10mb' }));
@@ -33,6 +37,8 @@ app.use("/api/events", eventRoutes);
 app.use("/api/committee", committeeRoutes);
 app.use("/api/registrations", registrationRoutes);
 app.use("/api", uploadFileRoute);
+app.use("/api/volunteers", volunteerRoutes);
+app.use("/api/applications", applicationRoutes);
 
 // Error handling middleware
 app.use((error, req, res, next) => {
