@@ -14,7 +14,7 @@ const EventSchema = new mongoose.Schema(
     duration: { type: String, required: true }, // e.g., "7 minutes"
     posterImage: { type: String, required: true }, // URL to the image
     rules: [{ type: String }], // Array of rules
-
+    Link:{type:String},
     // Additional fields for future extensibility
     status: {
       type: String,

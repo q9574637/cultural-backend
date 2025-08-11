@@ -11,7 +11,7 @@ import healthRoutes from "./routes/healthCheck.js";
 import uploadFileRoute from "./routes/uploadFile.js";
 import volunteerRoutes from "./routes/volunteer.js";
 import applicationRoutes from "./routes/applications.js";
-
+import staticContentRoutes from "./routes/staticContent.routes.js";
 const app = express();
 import connectDb from "./Config/Connection.js";
 
@@ -39,7 +39,7 @@ app.use("/api/registrations", registrationRoutes);
 app.use("/api", uploadFileRoute);
 app.use("/api/volunteers", volunteerRoutes);
 app.use("/api/applications", applicationRoutes);
-
+app.use("/api/static-content", staticContentRoutes);
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error(error);
