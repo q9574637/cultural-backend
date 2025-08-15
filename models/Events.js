@@ -31,6 +31,18 @@ const EventSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    StudentCoordinatorName:{
+      type: String,
+      required:true
+    },
+    StudentCoordinatorPhone:{
+      type: String,
+      required:true
+    },
+    StudentCoordinatorEmail:{
+      type: String,
+      required:true
+    },
 
     // Statistics
     stats: {
