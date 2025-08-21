@@ -1,3 +1,9 @@
+
+
+
+
+
+
 # Event Management Backend API
 
 A comprehensive Node.js + Express.js + MongoDB backend for the Nuvoriya Cultural Festival event management system.
