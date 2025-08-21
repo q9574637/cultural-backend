@@ -6,7 +6,7 @@ const CommitteeMemberSchema = new mongoose.Schema({
   phone: { type: String, required: true },
   email: { type: String, required: true },
   image: { type: String, required: true }, // URL to the image
-
+  link:{type:String},
   // Additional fields for future extensibility
   bio: { type: String },
   socialLinks: {

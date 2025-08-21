@@ -1,183 +1,97 @@
-import connectDb from "./Config/Connection.js";
-import User from "./models/User.js";
-import Event from "./models/Events.js";
-import CommitteeMember from "./models/CommitteeMember.js";
-import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import StaticContent from "./models/staticContent.model.js";
 
-const seedData = async () => {
-  try {
-    await connectDb();
-    console.log("Connected to database");
+dotenv.config();
 
-    // Clear existing data
-    await User.deleteMany({});
-    await Event.deleteMany({});
-    await CommitteeMember.deleteMany({});
-    console.log("Cleared existing data");
-
-    // Create super admin user
-    const hashedPassword = await bcrypt.hash("admin123", 10);
-    const superAdmin = new User({
-      name: "Super Admin",
-      email: "superadmin@nuvoriya.com",
-      password: hashedPassword,
-      role: "super_admin",
-      profile: { phone: "+91 98765 43210" }
-    });
-    await superAdmin.save();
-    console.log("Created super admin user");
-
-    // Create sample events
-    const events = [
-      {
-        title: "Parampara Parade",
-        category: "Fashion",
-        description: "Showcase of ethnic fashion from different states",
-        fullDescription: "Parampara Parade is a vibrant fashion show celebrating the rich ethnic heritage of India. Teams will showcase traditional costumes from different states, highlighting the diversity and beauty of Indian culture through fashion.",
-        prize: "₹15,000",
-        date: "September 20",
-        time: "2:00 PM",
-        participants: "6-8 per team",
-        venue: "Main Auditorium",
-        duration: "7 minutes",
-        posterImage: "/placeholder.svg?height=400&width=300&text=Parampara+Parade",
-        rules: [
-          "Minimum of 6 to 8 participants per team",
-          "Attractive costumes is mandatory and No form of vulgarity is encouraged",
-          "THEME: Showcase of ethnic fashion from different states",
-          "Time allotted: 7 minutes",
-          "Focus on traditional and cultural authenticity",
-        ],
-        organizer: superAdmin._id,
-        status: "active"
-      },
-      {
-        title: "Bloody Sweet Bangerz",
-        category: "Dance",
-        description: "High-energy group dance competition",
-        fullDescription: "Bloody Sweet Bangerz is an electrifying group dance competition that brings together the most talented dance crews. Teams will showcase their choreographic skills, creativity, and stage presence in this high-energy battle.",
-        prize: "₹12,000",
-        date: "September 20",
-        time: "4:00 PM",
-        participants: "6-8 per team",
-        venue: "Open Air Theatre",
-        duration: "5 minutes",
-        posterImage: "/placeholder.svg?height=400&width=300&text=Bloody+Sweet+Bangerz",
-        rules: [
-          "Minimum of 6 to 8 participants per team",
-          "Attractive costumes is mandatory and no form of vulgarity is encouraged",
-          "Time allotted: 5 minutes",
-          "Vulgarity in any form will lead to disqualification",
-          "Original choreography preferred",
-        ],
-        organizer: superAdmin._id,
-        status: "active"
-      },
-      {
-        title: "Jam Warfare",
-        category: "Music",
-        description: "Group singing and band competition",
-        fullDescription: "Jam Warfare is the ultimate musical battleground where bands and vocal groups compete in an intense singing competition. Whether you're a solo artist or a full band, this is your stage to shine.",
-        prize: "₹10,000",
-        date: "September 21",
-        time: "10:00 AM",
-        participants: "6-8+ members",
-        venue: "Music Hall",
-        duration: "Variable",
-        posterImage: "/placeholder.svg?height=400&width=300&text=Jam+Warfare",
-        rules: [
-          "Minimum of 6 to 8 or more than that if you are band with instruments",
-          "Karaoke and instruments can be used based on your preference",
-          "Song Language: Any language is allowed. But songs must be appropriate and respectful",
-          "Only non-vulgar, non-political songs. Obscene or offensive content will lead to disqualification",
-          "Bring your own instruments and cables. Basic sound system (mic/speakers) will be provided",
-        ],
-        organizer: superAdmin._id,
-        status: "active"
-      }
-    ];
-
-    const savedEvents = await Event.insertMany(events);
-    console.log("Created sample events");
-
-    // Create admin user assigned to first event
-    const adminPassword = await bcrypt.hash("admin123", 10);
-    const admin = new User({
-      name: "Event Admin",
-      email: "admin@nuvoriya.com",
-      password: adminPassword,
-      role: "admin",
-      assignedEventId: savedEvents[0]._id,
-      profile: { phone: "+91 98765 43211" }
-    });
-    await admin.save();
-    console.log("Created admin user");
-
-    // Create committee members
-    const committeeMembers = [
-      {
-        name: "Arjun Kumar",
-        position: "Festival Director",
-        phone: "+91 98765 43210",
-        email: "arjun@nuvoriya.com",
-        image: "/placeholder.svg?height=200&width=200&text=Arjun+Kumar",
-        order: 1
-      },
-      {
-        name: "Priya Sharma",
-        position: "Cultural Coordinator",
-        phone: "+91 98765 43211",
-        email: "priya@nuvoriya.com",
-        image: "/placeholder.svg?height=200&width=200&text=Priya+Sharma",
-        order: 2
-      },
-      {
-        name: "Karthik Raj",
-        position: "Events Manager",
-        phone: "+91 98765 43212",
-        email: "karthik@nuvoriya.com",
-        image: "/placeholder.svg?height=200&width=200&text=Karthik+Raj",
-        order: 3
-      },
-      {
-        name: "Meera Nair",
-        position: "Registration Head",
-        phone: "+91 98765 43213",
-        email: "meera@nuvoriya.com",
-        image: "/placeholder.svg?height=200&width=200&text=Meera+Nair",
-        order: 4
-      },
-      {
-        name: "Vikram Singh",
-        position: "Technical Lead",
-        phone: "+91 98765 43214",
-        email: "vikram@nuvoriya.com",
-        image: "/placeholder.svg?height=200&width=200&text=Vikram+Singh",
-        order: 5
-      },
-      {
-        name: "Ananya Iyer",
-        position: "Marketing Head",
-        phone: "+91 98765 43215",
-        email: "ananya@nuvoriya.com",
-        image: "/placeholder.svg?height=200&width=200&text=Ananya+Iyer",
-        order: 6
-      }
-    ];
-
-    await CommitteeMember.insertMany(committeeMembers);
-    console.log("Created committee members");
-
-    console.log("✅ Database seeded successfully!");
-    console.log("\n📋 Login Credentials:");
-    console.log("Super Admin: superadmin@nuvoriya.com / admin123");
-    console.log("Event Admin: admin@nuvoriya.com / admin123");
-    
-    process.exit(0);
-  } catch (error) {
-    console.error("❌ Error seeding database:", error);
-    process.exit(1);
-  }
+const mockData = {
+  festivalName: "VARNAVE'25",
+  festivalDates: "September 12-13, 2025",
+  festivalLocation: "Coimbatore",
+  heroSubtitle: "Cultural Festival • September 12-13, 2025 • Coimbatore",
+  stats: {
+    eventsCount: "20+",
+    eventsLabel: "Events",
+    celebrationDuration: "3 Days",
+    celebrationLabel: "Celebration",
+    participantsCount: "5000+",
+    participantsLabel: "Participants",
+  },
+  aboutTitle: "ABOUT VARNAVE'25",
+  aboutDescription:
+    "Varnave'25 is the premier cultural festival celebrating the rich heritage of Tamil arts, cinema, music, and performing arts. Join us for three days of extraordinary performances, competitions, and cultural immersion in the heart of Coimbatore.",
+  aboutFeatures: [
+    {
+      title: "3 DAYS",
+      subtitle: "OF CELEBRATION",
+      description: "Non-stop entertainment with 30+ events across multiple categories",
+      gradient: "from-blue-500 to-purple-500",
+    },
+    {
+      title: "₹1 LAKH+",
+      subtitle: "PRIZE MONEY",
+      description: "Exciting cash prizes and recognition for winners",
+      gradient: "from-orange-500 to-yellow-500",
+    },
+    {
+      title: "5000+",
+      subtitle: "PARTICIPANTS",
+      description: "Students from across Tamil Nadu and beyond",
+      gradient: "from-pink-500 to-red-500",
+    },
+  ],
+  eventsTitle: "EVENTS & COMPETITIONS",
+  registerTitle: "REGISTER NOW",
+  registerDescription: "Secure your spot at the grandest Tamil cultural celebration",
+  registerFormTitle: "EVENT REGISTRATION",
+  registerFormDescription: "Register for events and competitions via Google Forms.",
+  registerButtonText: "REGISTER VIA GOOGLE FORM",
+  registerDisclaimer: "Click the button to proceed to the Google Form for registration.",
+  eventRegistrationFormUrl: "https://forms.gle/YourEventRegistrationFormLink",
+  volunteerTitle: "BE A VOLUNTEER",
+  volunteerDescription: "Join our dedicated team and help make Varnave'25 a grand success!",
+  volunteerFormTitle: "VOLUNTEER REGISTRATION",
+  volunteerFormDescription: "Contribute to the festival and gain valuable experience.",
+  volunteerButtonText: "APPLY TO VOLUNTEER",
+  volunteerDisclaimer: "Applications close September 1, 2025",
+  volunteerRegistrationFormUrl: "https://forms.gle/JEz272bQkz7HEjks6",
+  committeeTitle: "CORE COMMITTEE",
+  committeeDescription: "Meet the dedicated team behind Varnave'25",
+  footerDescription:
+    "The premier Tamil cultural festival celebrating arts, cinema, music, and performing arts.",
+  footerQuickLinks: ["About", "Events", "Register", "Volunteer", "Contact"],
+  footerEventInfo: {
+    date: "September 12-13, 2025",
+    location: "Coimbatore, Tamil Nadu",
+    phone: "+91 98765 43210",
+  },
+  socialMediaLinks: {
+    instagram: "https://instagram.com",
+    facebook: "https://facebook.com",
+    twitter: "https://twitter.com",
+  },
+  copyrightText:
+    "© 2025 Varnave. All rights reserved. Made with ❤️ for Tamil culture.",
 };
 
-seedData(); 
+async function seedStaticContent() {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log("✅ MongoDB Connected");
+
+    const existing = await StaticContent.findOne();
+    if (existing) {
+      console.log("⚠️ Static content already exists. Skipping seed.");
+      process.exit(0);
+    }
+
+    await StaticContent.create(mockData);
+    console.log("🎉 Static content seeded successfully!");
+    process.exit(0);
+  } catch (err) {
+    console.error("❌ Error seeding static content:", err);
+    process.exit(1);
+  }
+}
+
+seedStaticContent();
