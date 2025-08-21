@@ -14,6 +14,7 @@ const EventSchema = new mongoose.Schema(
     duration: { type: String, required: true }, // e.g., "7 minutes"
     posterImage: { type: String, required: true }, // URL to the image
     rules: [{ type: String }], // Array of rules
+    Link: { type: String },
 
     // Additional fields for future extensibility
     status: {
@@ -30,6 +31,21 @@ const EventSchema = new mongoose.Schema(
     organizer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+    },
+
+    // ✅ Updated: Now arrays instead of strings
+    StudentCoordinatorName: {
+      type: [String], // Array of names
+      required: true,
+    },
+    StudentCoordinatorPhone: {
+      type: [String], // Array of phone numbers
+      required: true,
+    },
+    StudentCoordinatorEmail: {
+      type: String, // Keeping as single email (can be array if needed)
+      required: true,
+      default: "culturalfest2k25@gmail.com",
     },
 
     // Statistics
