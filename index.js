@@ -6,12 +6,10 @@ dotenv.config();
 import authRoutes from "./routes/auth.js";
 import eventRoutes from "./routes/events.js";
 import committeeRoutes from "./routes/committee.js";
-import registrationRoutes from "./routes/registrations.js";
 import healthRoutes from "./routes/healthCheck.js";
 import uploadFileRoute from "./routes/uploadFile.js";
-import volunteerRoutes from "./routes/volunteer.js";
-import applicationRoutes from "./routes/applications.js";
-import staticContentRoutes from "./routes/staticContent.routes.js";
+import ticketRoutes from "./routes/ticket.js";
+
 const app = express();
 import connectDb from "./Config/Connection.js";
 
@@ -35,11 +33,9 @@ app.use("/api", healthRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/committee", committeeRoutes);
-app.use("/api/registrations", registrationRoutes);
+app.use("/api/ticket", ticketRoutes);
 app.use("/api", uploadFileRoute);
-app.use("/api/volunteers", volunteerRoutes);
-app.use("/api/applications", applicationRoutes);
-app.use("/api/static-content", staticContentRoutes);
+
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error(error);
@@ -54,7 +50,7 @@ app.use((error, req, res, next) => {
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: "Route not found"
+    message: "Routes not found"
   });
 });
 

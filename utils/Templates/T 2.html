@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ticket Details</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f8f9fa;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background: #f2f2f2;
+    }
+    img {
+      max-width: 120px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Ticket Details</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Holder Name</th>
+      <th>Phone</th>
+      <th>Email</th>
+      <th>Food Coupon</th>
+      <th>Checked In</th>
+      <th>Active</th>
+      <th>Event Day</th>
+      <th>QR Code</th>
+      <th>Created At</th>
+    </tr>
+  </thead>
+  <tbody id="ticketTable"></tbody>
+</table>
+
+<script>
+  const data =[{
+    "holderName": "Sharath Balan",
+    "phone": "9876543211",
+    "email": "sharathexamples.com",
+    "foodCoupon": 100,
+    "active": true,
+    "checkedIn": false,
+    "eventDay": 1,
+    "qr": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIQAAACECAYAAABRRIOnAAAAAklEQVR4AewaftIAAAOmSURBVO3BQY7cWgIDweRD3f/KOb34C64ECFLX2AYj4g9m/nOYKYeZcpgph5lymCmHmXKYKYeZcpgph5lymCmHmXKYKYeZcpgpHx5KwjepXElCU2lJaCpPJKGptCR8k8oTh5lymCmHmfLhZSpvSsIdKk8koam0JDyh8qYkvOkwUw4z5TBTPvyyJNyhckcS3qTyTUm4Q+U3HWbKYaYcZsqHf4zKlSRcScIdKv+Sw0w5zJTDTPnwj0lCU7lD5Y4kNJW/2WGmHGbKYaZ8+GUq36RyReWJJDSVJ1T+JIeZcpgph5ny4WVJ+JMkoam0JDSVloSm0pLQVK4k4U92mCmHmXKYKR8eUvmTJOEOlSdUrqj8TQ4z5TBTDjMl/uCBJDSVloQ3qVxJQlO5IwlPqLQkvEnlNx1mymGmHGZK/MGLktBUriShqVxJwhMqLQlN5YkkNJU7ktBUvukwUw4z5TBTPjyUhKbSknBFpSXhCZWWhCeScIdKS8IVlaZyJQlXVJ44zJTDTDnMlA8vS8IdSbiickcSmsoTKk+o3JGEptJUWhLedJgph5lymCnxBy9KQlNpSWgqV5LQVO5IwhWVloSm0pLQVK4k4Q6VloSm8psOM+UwUw4z5cNDSbiShCdUWhKayh0qLQlNpSWhqbQkXFF5QqUloam86TBTDjPlMFM+vEylJaGpXEnCHUl4QuWKSktCU7mShKbSknCHSktCU3niMFMOM+UwUz78MpWWhDtUWhKaSkvCHUloKi0JTaUloak0lZaEpvKEypsOM+UwUw4z5cP/mUpLQkvClSQ0lZaEO5JwJQlXknBHEt6k8sRhphxmymGmxB/8xZJwh8qbktBU7kjCFZWWhKbypsNMOcyUw0z58FASvkmlqbQkXEnCFZWWhKZyRxKayh1JaCotCU3licNMOcyUw0z58DKVNyXhShKaypUkNJU7knCHyhMq33SYKYeZcpgpH35ZEu5QeSIJTeVKEt6UhCdUWhKaSlN502GmHGbKYaZ8+Mcloam0JDSVO5LQVFoSmkpLQkvClSRcUXniMFMOM+UwUz78Y1RaEq6otCQ0lZaEptKS0FRaEprKE0l402GmHGbKYaZ8+GUqv0nliSQ0lZaEK0loKi0JTeVKEprKNx1mymGmHGbKh5cl4ZuS0FSayhWVloSm8qYkNJWm0pLwTYeZcpgph5kSfzDzn8NMOcyUw0w5zJTDTDnMlMNMOcyUw0w5zJTDTDnMlMNMOcyUw0z5HzeTqw+2wQNUAAAAAElFTkSuQmCC",
+    "_id": "68a6b94f1220c6c2ebad1ec1",
+    "createdAt": "2025-08-21T06:14:39.586Z",
+    "updatedAt": "2025-08-21T06:14:39.679Z",
+    "__v": 0
+}];
+
+  const tbody = document.getElementById("ticketTable");
+
+  data.forEach(ticket => {
+    const row = `
+      <tr>
+        <td>${ticket.holderName}</td>
+        <td>${ticket.phone}</td>
+        <td>${ticket.email}</td>
+        <td>₹${ticket.foodCoupon}</td>
+        <td>${ticket.checkedIn ? "✅" : "❌"}</td>
+        <td>${ticket.active ? "✅" : "❌"}</td>
+        <td>Day ${ticket.eventDay}</td>
+        <td><img src="${ticket.qr}" alt="QR Code"></td>
+        <td>${new Date(ticket.createdAt).toLocaleString()}</td>
+      </tr>
+    `;
+    tbody.innerHTML += row;
+  });
+</script>
+
+</body>
+</html>
