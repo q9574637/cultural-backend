@@ -14,3 +14,12 @@ export const clickHandler = async (req, res) => {
       }
     };
 
+export const getClickCount = async (req, res) => {
+    try {
+        const click = await Click.findOne();
+        res.json({ count: click.clickCount });
+      } catch (err) {
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    };
+    
