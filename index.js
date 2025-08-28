@@ -9,7 +9,7 @@ import committeeRoutes from "./routes/committee.js";
 import healthRoutes from "./routes/healthCheck.js";
 import uploadFileRoute from "./routes/uploadFile.js";
 import ticketRoutes from "./routes/ticket.js";
-
+import clickRoutes from "./routes/click.js";
 const app = express();
 import connectDb from "./Config/Connection.js";
 
@@ -35,6 +35,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/committee", committeeRoutes);
 app.use("/api/ticket", ticketRoutes);
 app.use("/api", uploadFileRoute);
+app.use("/api/click", clickRoutes);
 
 // Error handling middleware
 app.use((error, req, res, next) => {
