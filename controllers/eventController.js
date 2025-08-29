@@ -48,8 +48,15 @@ export const updateEvent = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Event not found' });
     }
 
-    // Check if user has permission to update this event
-    if (req.user.role !== 'super_admin' && event.organizer?.toString() !== req.user.id) {
+    // Permission check
+    const isSuperAdmin = req.user.role === 'super_admin';
+    const isOrganizer = event.organizer?.toString() === req.user.id;
+    const isStudentCoordinator =
+      Array.isArray(event.StudentCoordinatorEmail) // in case it's multiple emails
+        ? event.StudentCoordinatorEmail.includes(req.user.email)
+        : event.StudentCoordinatorEmail === req.user.email;
+
+    if (!isSuperAdmin && !isOrganizer && !isStudentCoordinator) {
       return res.status(403).json({ success: false, message: 'Not authorized to update this event' });
     }
 
@@ -64,6 +71,7 @@ export const updateEvent = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error', error: err.message });
   }
 };
+
 
 // Delete event
 export const deleteEvent = async (req, res) => {
